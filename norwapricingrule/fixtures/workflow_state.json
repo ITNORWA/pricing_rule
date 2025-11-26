@@ -1,0 +1,30 @@
+[
+    {
+        "doctype": "Workflow State",
+        "workflow_state": "Draft",
+        "document_type": "Sales Order",
+        "description": "The order is in draft, awaiting discount approval if necessary.",
+        "is_final": 0
+    },
+    {
+        "doctype": "Workflow State",
+        "workflow_state": "Pending Discount Approval",
+        "document_type": "Sales Order",
+        "description": "The order requires discount approval from Sales Manager.",
+        "is_final": 0
+    },
+    {
+        "doctype": "Workflow State",
+        "workflow_state": "Approved",
+        "document_type": "Sales Order",
+        "description": "The discount has been approved by the Sales Manager.",
+        "is_final": 1
+    },
+    {
+        "doctype": "Workflow State",
+        "workflow_state": "Rejected",
+        "document_type": "Sales Order",
+        "description": "The discount has been rejected by the Sales Manager.",
+        "is_final": 1
+    }
+]

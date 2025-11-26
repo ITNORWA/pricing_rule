@@ -1,0 +1,26 @@
+[
+    {
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Request Discount Approval",
+        "workflow_state": "Pending Discount Approval",
+        "allowed_roles": ["Sales User", "Sales Manager"]
+    },
+    {
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Approve Discount",
+        "workflow_state": "Approved",
+        "allowed_roles": ["Sales Manager"]
+    },
+    {
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Reject Discount",
+        "workflow_state": "Rejected",
+        "allowed_roles": ["Sales Manager"]
+    },
+    {
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Submit",
+        "workflow_state": "Draft",
+        "allowed_roles": ["Sales User", "Sales Manager"]
+    }
+]
