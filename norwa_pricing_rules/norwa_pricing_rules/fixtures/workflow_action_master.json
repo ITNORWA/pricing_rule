@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Request Approval",
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Request Approval"
+    },
+    {
+        "name": "Approve",
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Approve"
+    },
+    {
+        "name": "Reject",
+        "doctype": "Workflow Action Master",
+        "workflow_action_name": "Reject"
+    }
+]
