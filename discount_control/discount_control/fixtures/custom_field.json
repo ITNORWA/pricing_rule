@@ -1,0 +1,16 @@
+[
+ {
+  "default": "0",
+  "doctype": "Custom Field",
+  "dt": "Sales Order",
+  "fieldname": "custom_needs_manager_approval",
+  "fieldtype": "Check",
+  "hidden": 0,
+  "insert_after": "title",
+  "label": "Needs Manager Approval",
+  "module": "Discount Control",
+  "name": "Sales Order-custom_needs_manager_approval",
+  "read_only": 1,
+  "reqd": 0
+ }
+]
