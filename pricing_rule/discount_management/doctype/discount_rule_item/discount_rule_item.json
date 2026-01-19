@@ -1,0 +1,24 @@
+{
+ "actions": [],
+ "allow_import": 0,
+ "allow_rename": 0,
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "module": "Discount Management",
+ "name": "Discount Rule Item",
+ "track_changes": 1
+}

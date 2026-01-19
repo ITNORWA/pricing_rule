@@ -1,0 +1,144 @@
+[
+ {
+  "doctype": "Workflow",
+  "document_type": "Quotation",
+  "is_active": 1,
+  "name": "Discount Approval - Quotation",
+  "override_status": 0,
+  "send_email_alert": 0,
+  "states": [
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "0",
+    "state": "Draft"
+   },
+   {
+    "allow_edit": "Sales Manager",
+    "doc_status": "0",
+    "state": "Pending Approval"
+   },
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "0",
+    "state": "Approved"
+   },
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "1",
+    "state": "Submitted"
+   }
+  ],
+  "transitions": [
+   {
+    "action": "Request Approval",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "condition": "doc.requires_discount_approval == 1",
+    "next_state": "Pending Approval",
+    "state": "Draft"
+   },
+   {
+    "action": "Submit",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "condition": "doc.requires_discount_approval != 1",
+    "next_state": "Submitted",
+    "state": "Draft"
+   },
+   {
+    "action": "Approve",
+    "allow_self_approval": 0,
+    "allowed": "Sales Manager",
+    "next_state": "Approved",
+    "state": "Pending Approval"
+   },
+   {
+    "action": "Return for Amendment",
+    "allow_self_approval": 0,
+    "allowed": "Sales Manager",
+    "next_state": "Draft",
+    "state": "Pending Approval"
+   },
+   {
+    "action": "Submit",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "next_state": "Submitted",
+    "state": "Approved"
+   }
+  ],
+  "workflow_name": "Discount Approval - Quotation",
+  "workflow_state_field": "approval_status"
+ },
+ {
+  "doctype": "Workflow",
+  "document_type": "Sales Order",
+  "is_active": 1,
+  "name": "Discount Approval - Sales Order",
+  "override_status": 0,
+  "send_email_alert": 0,
+  "states": [
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "0",
+    "state": "Draft"
+   },
+   {
+    "allow_edit": "Sales Manager",
+    "doc_status": "0",
+    "state": "Pending Approval"
+   },
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "0",
+    "state": "Approved"
+   },
+   {
+    "allow_edit": "Sales User",
+    "doc_status": "1",
+    "state": "Submitted"
+   }
+  ],
+  "transitions": [
+   {
+    "action": "Request Approval",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "condition": "doc.requires_discount_approval == 1",
+    "next_state": "Pending Approval",
+    "state": "Draft"
+   },
+   {
+    "action": "Submit",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "condition": "doc.requires_discount_approval != 1",
+    "next_state": "Submitted",
+    "state": "Draft"
+   },
+   {
+    "action": "Approve",
+    "allow_self_approval": 0,
+    "allowed": "Sales Manager",
+    "next_state": "Approved",
+    "state": "Pending Approval"
+   },
+   {
+    "action": "Return for Amendment",
+    "allow_self_approval": 0,
+    "allowed": "Sales Manager",
+    "next_state": "Draft",
+    "state": "Pending Approval"
+   },
+   {
+    "action": "Submit",
+    "allow_self_approval": 1,
+    "allowed": "Sales User",
+    "next_state": "Submitted",
+    "state": "Approved"
+   }
+  ],
+  "workflow_name": "Discount Approval - Sales Order",
+  "workflow_state_field": "approval_status"
+ }
+]

@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "hash",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "apply_on",
+  "item_group",
+  "start_date",
+  "end_date",
+  "max_discount_percentage",
+  "is_enabled",
+  "toggle_rule",
+  "items",
+  "refresh_update_items",
+  "created_by",
+  "last_modified_date"
+ ],
+ "fields": [
+  {
+   "default": "Item Group",
+   "fieldname": "apply_on",
+   "fieldtype": "Select",
+   "label": "Apply On",
+   "options": "Item Group\nItem",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "mandatory_depends_on": "eval:doc.apply_on=='Item Group'",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "max_discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Maximum Discount Percentage",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "toggle_rule",
+   "fieldtype": "Button",
+   "label": "Enable/Disable Rule"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Discount Rule Item"
+  },
+  {
+   "fieldname": "refresh_update_items",
+   "fieldtype": "Button",
+   "label": "Refresh/Update Items"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_modified_date",
+   "fieldtype": "Datetime",
+   "label": "Last Modified Date",
+   "read_only": 1
+  }
+ ],
+ "module": "Discount Management",
+ "name": "Item Group Discount Rule",
+ "naming_rule": "By fieldname",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

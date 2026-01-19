@@ -1,0 +1,22 @@
+[
+ {
+  "doctype": "Workflow Action Master",
+  "name": "Request Approval",
+  "workflow_action_name": "Request Approval"
+ },
+ {
+  "doctype": "Workflow Action Master",
+  "name": "Approve",
+  "workflow_action_name": "Approve"
+ },
+ {
+  "doctype": "Workflow Action Master",
+  "name": "Return for Amendment",
+  "workflow_action_name": "Return for Amendment"
+ },
+ {
+  "doctype": "Workflow Action Master",
+  "name": "Submit",
+  "workflow_action_name": "Submit"
+ }
+]
