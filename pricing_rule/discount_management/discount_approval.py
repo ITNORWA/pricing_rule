@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import flt, validate_email_address
+from frappe.utils import flt, getdate, validate_email_address
 
 APPROVAL_NOT_REQUESTED = "Draft"
 APPROVAL_PENDING = "Pending Approval"
@@ -173,7 +173,7 @@ def get_exceeding_items(doc):
 
 
 def _get_active_rules():
-	today = frappe.utils.nowdate()
+	today = getdate(frappe.utils.nowdate())
 	rules = frappe.get_all(
 		"Item Group Discount Rule",
 		filters={"is_enabled": 1, "start_date": ["<=", today]},
@@ -194,7 +194,8 @@ def _get_active_rules():
 
 	active_rules = []
 	for rule in rules:
-		if rule.end_date and rule.end_date < today:
+		rule_end = getdate(rule.end_date) if rule.end_date else None
+		if rule_end and rule_end < today:
 			continue
 		active_rules.append(
 			frappe._dict(
