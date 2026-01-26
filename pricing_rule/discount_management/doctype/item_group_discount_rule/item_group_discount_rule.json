@@ -6,19 +6,30 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "details_section",
   "apply_on",
   "item_group",
+  "details_column_break",
   "start_date",
   "end_date",
+  "discount_section",
   "max_discount_percentage",
+  "discount_column_break",
   "is_enabled",
-  "toggle_rule",
+  "items_section",
   "items",
   "refresh_update_items",
+  "audit_section",
   "created_by",
+  "audit_column_break",
   "last_modified_date"
  ],
  "fields": [
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
   {
    "default": "Item Group",
    "fieldname": "apply_on",
@@ -35,6 +46,10 @@
    "options": "Item Group"
   },
   {
+   "fieldname": "details_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date",
@@ -46,10 +61,19 @@
    "label": "End Date"
   },
   {
+   "fieldname": "discount_section",
+   "fieldtype": "Section Break",
+   "label": "Discount"
+  },
+  {
    "fieldname": "max_discount_percentage",
    "fieldtype": "Percent",
    "label": "Maximum Discount Percentage",
    "reqd": 1
+  },
+  {
+   "fieldname": "discount_column_break",
+   "fieldtype": "Column Break"
   },
   {
    "default": "1",
@@ -58,9 +82,9 @@
    "label": "Enabled"
   },
   {
-   "fieldname": "toggle_rule",
-   "fieldtype": "Button",
-   "label": "Enable/Disable Rule"
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
   },
   {
    "fieldname": "items",
@@ -74,11 +98,20 @@
    "label": "Refresh/Update Items"
   },
   {
+   "fieldname": "audit_section",
+   "fieldtype": "Section Break",
+   "label": "Audit"
+  },
+  {
    "fieldname": "created_by",
    "fieldtype": "Link",
    "label": "Created By",
    "options": "User",
    "read_only": 1
+  },
+  {
+   "fieldname": "audit_column_break",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "last_modified_date",
