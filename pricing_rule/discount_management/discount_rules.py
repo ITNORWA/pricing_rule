@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 
 def apply_item_group_max_discount(doc, method=None):
@@ -11,7 +11,7 @@ def apply_item_group_max_discount(doc, method=None):
 
 
 def get_applicable_max_discount(item_code, item_group):
-	today = frappe.utils.nowdate()
+	today = getdate(frappe.utils.nowdate())
 	rules = frappe.get_all(
 		"Item Group Discount Rule",
 		filters={"is_enabled": 1, "start_date": ["<=", today]},
