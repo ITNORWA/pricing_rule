@@ -9,14 +9,14 @@ EMAIL_NOTIFICATIONS_ENABLED = False
 
 
 def validate_sales_doc(doc, method=None):
-	if not doc.get("approval_status"):
-		doc.approval_status = APPROVAL_NOT_REQUESTED
+	if not doc.get("discount_workflow_state"):
+		doc.discount_workflow_state = APPROVAL_NOT_REQUESTED
 
 	doc.requires_discount_approval = 0
 
 	if doc.doctype == "Sales Order" and doc.is_new():
-		if doc.approval_status in (APPROVAL_APPROVED, APPROVAL_SUBMITTED) and _has_quotation_items(doc):
-			doc.approval_status = APPROVAL_NOT_REQUESTED
+		if doc.discount_workflow_state in (APPROVAL_APPROVED, APPROVAL_SUBMITTED) and _has_quotation_items(doc):
+			doc.discount_workflow_state = APPROVAL_NOT_REQUESTED
 
 	_exceeding = get_exceeding_items(doc)
 	if doc.doctype == "Sales Order":
@@ -39,8 +39,8 @@ def before_submit_sales_doc(doc, method=None):
 	if doc.doctype == "Sales Order" and not needing:
 		return
 
-	if doc.approval_status != APPROVAL_APPROVED:
-		if doc.approval_status != APPROVAL_SUBMITTED:
+	if doc.discount_workflow_state != APPROVAL_APPROVED:
+		if doc.discount_workflow_state != APPROVAL_SUBMITTED:
 			frappe.throw(_build_exceeded_message(exceeding))
 
 
@@ -54,13 +54,13 @@ def request_discount_approval(doctype, name):
 	if not exceeding:
 		frappe.throw("No discounts exceed the limit for this document.")
 
-	doc.approval_status = APPROVAL_PENDING
+	doc.discount_workflow_state = APPROVAL_PENDING
 	doc.approval_comments = ""
 	doc.save(ignore_permissions=True)
 
 	if EMAIL_NOTIFICATIONS_ENABLED:
 		_notify_sales_managers(doc)
-	return {"status": doc.approval_status, "message": "Approval request submitted."}
+	return {"status": doc.discount_workflow_state, "message": "Approval request submitted."}
 
 
 @frappe.whitelist()
@@ -70,14 +70,14 @@ def approve_discount(doctype, name, comments=None):
 	_validate_sales_doc_type(doc)
 	_ensure_draft(doc)
 
-	doc.approval_status = APPROVAL_APPROVED
+	doc.discount_workflow_state = APPROVAL_APPROVED
 	if comments:
 		doc.approval_comments = comments
 	doc.save(ignore_permissions=True)
 
 	if EMAIL_NOTIFICATIONS_ENABLED:
 		_notify_requester(doc, "Approved")
-	return {"status": doc.approval_status, "message": "Discount approved."}
+	return {"status": doc.discount_workflow_state, "message": "Discount approved."}
 
 
 @frappe.whitelist()
@@ -87,14 +87,14 @@ def reject_discount(doctype, name, comments=None):
 	_validate_sales_doc_type(doc)
 	_ensure_draft(doc)
 
-	doc.approval_status = APPROVAL_NOT_REQUESTED
+	doc.discount_workflow_state = APPROVAL_NOT_REQUESTED
 	if comments:
 		doc.approval_comments = comments
 	doc.save(ignore_permissions=True)
 
 	if EMAIL_NOTIFICATIONS_ENABLED:
 		_notify_requester(doc, "Returned for amendment")
-	return {"status": doc.approval_status, "message": "Returned for amendment."}
+	return {"status": doc.discount_workflow_state, "message": "Returned for amendment."}
 
 
 @frappe.whitelist()
@@ -106,7 +106,7 @@ def get_discount_status(doctype, name):
 	needing = filter_exceeding_needing_approval(doc, exceeding)
 	return {
 		"requires_approval": bool(needing),
-		"approval_status": doc.get("approval_status") or APPROVAL_NOT_REQUESTED,
+		"approval_status": doc.get("discount_workflow_state") or APPROVAL_NOT_REQUESTED,
 		"exceeding_count": len(needing),
 	}
 
@@ -126,7 +126,9 @@ def get_exceeding_items(doc):
 	}
 
 	allowed_rules = _get_active_rules()
-	if not allowed_rules:
+	customer_rules = _get_active_customer_rules()
+	
+	if not allowed_rules and not customer_rules:
 		return []
 
 	item_rules = {}
@@ -142,17 +144,36 @@ def get_exceeding_items(doc):
 				"items": set(rule_items) if rule_items else set(),
 			}
 
+	# Map Customer Groups to their limits
+	customer_group_map = {}
+	for rule in customer_rules:
+		customer_group_map[rule.customer_group] = rule.max_discount
+
+	# Document Customer Group Limit
+	doc_customer_group = doc.get("customer_group")
+	customer_max_discount = customer_group_map.get(doc_customer_group)
+
 	exceeding = []
 	for item in doc.items:
 		item_group = item_group_map.get(item.item_code)
 		max_discount = None
-		if item.item_code in item_rules:
-			max_discount = item_rules[item.item_code]
-		elif item_group and item_group in group_rules:
-			rule = group_rules[item_group]
-			if rule["items"] and item.item_code not in rule["items"]:
-				continue
-			max_discount = rule["max_discount"]
+		
+		# PRIORITY 1: Customer Group Rule
+		if customer_max_discount is not None:
+			max_discount = customer_max_discount
+			
+		# PRIORITY 2: Item Group Rule (Fallback)
+		else:
+			if item.item_code in item_rules:
+				max_discount = item_rules[item.item_code]
+			elif item_group and item_group in group_rules:
+				rule = group_rules[item_group]
+				if rule["items"] and item.item_code not in rule["items"]:
+					pass # Item specifically excluded from Group Rule
+				else:
+					max_discount = rule["max_discount"]
+
+		# If no limit applies from either source, skip.
 		if max_discount is None:
 			continue
 
@@ -211,6 +232,28 @@ def _get_active_rules():
 	return active_rules
 
 
+def _get_active_customer_rules():
+	today = getdate(frappe.utils.nowdate())
+	rules = frappe.get_all(
+		"Customer Group Discount Rule",
+		filters={"is_enabled": 1, "start_date": ["<=", today]},
+		fields=["name", "customer_group", "max_discount_percentage", "end_date"],
+	)
+	
+	active_rules = []
+	for rule in rules:
+		rule_end = getdate(rule.end_date) if rule.end_date else None
+		if rule_end and rule_end < today:
+			continue
+		
+		active_rules.append(frappe._dict({
+			"customer_group": rule.customer_group,
+			"max_discount": flt(rule.max_discount_percentage)
+		}))
+	
+	return active_rules
+
+
 def filter_exceeding_needing_approval(doc, exceeding):
 	if doc.doctype != "Sales Order":
 		return exceeding
@@ -242,7 +285,7 @@ def _get_approved_quotation_map(doc):
 		"Quotation",
 		filters={
 			"name": ["in", list(quotation_map.values())],
-			"approval_status": ["in", [APPROVAL_APPROVED, APPROVAL_SUBMITTED]],
+			"discount_workflow_state": ["in", [APPROVAL_APPROVED, APPROVAL_SUBMITTED]],
 		},
 		pluck="name",
 	)
@@ -299,7 +342,7 @@ def notify_exceeded_on_save(doc, method=None):
 	if doc.flags.get("_discount_notice_shown") or getattr(frappe.flags, "_discount_notice_shown", False):
 		return
 
-	if doc.approval_status in (APPROVAL_APPROVED, APPROVAL_SUBMITTED):
+	if doc.discount_workflow_state in (APPROVAL_APPROVED, APPROVAL_SUBMITTED):
 		return
 
 	exceeding = get_exceeding_items(doc)
@@ -318,8 +361,8 @@ def notify_exceeded_on_save(doc, method=None):
 def before_validate_sales_order(doc, method=None):
 	# Ensure new Sales Orders from Quotation start in Draft workflow state.
 	if doc.is_new() and _has_quotation_items(doc):
-		if doc.approval_status in (APPROVAL_APPROVED, APPROVAL_SUBMITTED):
-			doc.approval_status = APPROVAL_NOT_REQUESTED
+		if doc.discount_workflow_state in (APPROVAL_APPROVED, APPROVAL_SUBMITTED):
+			doc.discount_workflow_state = APPROVAL_NOT_REQUESTED
 
 
 def _validate_sales_doc_type(doc):
