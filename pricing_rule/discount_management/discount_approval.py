@@ -151,7 +151,12 @@ def get_exceeding_items(doc):
 
 	# Document Customer Group Limit
 	doc_customer_group = doc.get("customer_group")
-	customer_max_discount = customer_group_map.get(doc_customer_group)
+	if not doc_customer_group and doc.get("customer"):
+		doc_customer_group = frappe.db.get_value("Customer", doc.customer, "customer_group")
+
+	customer_max_discount = None
+	if doc_customer_group:
+		customer_max_discount = customer_group_map.get(doc_customer_group)
 
 	exceeding = []
 	for item in doc.items:
