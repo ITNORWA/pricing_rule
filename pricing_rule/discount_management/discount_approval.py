@@ -5,6 +5,7 @@ APPROVAL_NOT_REQUESTED = "Draft"
 APPROVAL_PENDING = "Pending Approval"
 APPROVAL_APPROVED = "Approved"
 APPROVAL_SUBMITTED = "Submitted"
+APPROVAL_TO_AMEND = "To Amend"
 EMAIL_NOTIFICATIONS_ENABLED = False
 
 
@@ -87,7 +88,7 @@ def reject_discount(doctype, name, comments=None):
 	_validate_sales_doc_type(doc)
 	_ensure_draft(doc)
 
-	doc.discount_workflow_state = APPROVAL_NOT_REQUESTED
+	doc.discount_workflow_state = APPROVAL_TO_AMEND
 	if comments:
 		doc.approval_comments = comments
 	doc.save(ignore_permissions=True)
