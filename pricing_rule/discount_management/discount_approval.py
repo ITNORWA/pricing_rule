@@ -145,19 +145,18 @@ def get_exceeding_items(doc):
 				"items": set(rule_items) if rule_items else set(),
 			}
 
-	# Map Customer Groups to their limits
 	customer_group_map = {}
 	for rule in customer_rules:
-		customer_group_map[rule.customer_group] = rule.max_discount
+		customer_group_map[rule.customer_group] = {
+			"discount_type": rule.discount_type,
+			"max_discount": rule.max_discount,
+			"item_groups": rule.get("item_groups", {})
+		}
 
 	# Document Customer Group Limit
 	doc_customer_group = doc.get("customer_group")
 	if not doc_customer_group and doc.get("customer"):
 		doc_customer_group = frappe.db.get_value("Customer", doc.customer, "customer_group")
-
-	customer_max_discount = None
-	if doc_customer_group:
-		customer_max_discount = customer_group_map.get(doc_customer_group)
 
 	exceeding = []
 	for item in doc.items:
@@ -165,8 +164,13 @@ def get_exceeding_items(doc):
 		max_discount = None
 		
 		# PRIORITY 1: Customer Group Rule
-		if customer_max_discount is not None:
-			max_discount = customer_max_discount
+		if doc_customer_group and doc_customer_group in customer_group_map:
+			cust_rule = customer_group_map[doc_customer_group]
+			if cust_rule["discount_type"] == "Item Group":
+				if item_group and item_group in cust_rule["item_groups"]:
+					max_discount = cust_rule["item_groups"][item_group]
+			else:
+				max_discount = cust_rule["max_discount"]
 			
 		# PRIORITY 2: Item Group Rule (Fallback)
 		else:
@@ -243,9 +247,25 @@ def _get_active_customer_rules():
 	rules = frappe.get_all(
 		"Customer Group Discount Rule",
 		filters={"is_enabled": 1, "start_date": ["<=", today]},
-		fields=["name", "customer_group", "max_discount_percentage", "end_date"],
+		fields=["name", "customer_group", "discount_type", "max_discount_percentage", "end_date"],
 	)
 	
+	if not rules:
+		return []
+
+	rule_names = [rule.name for rule in rules if rule.discount_type == "Item Group"]
+	item_groups_map = {}
+	if rule_names:
+		child_rows = frappe.get_all(
+			"Customer Discount Rule Item Group",
+			filters={"parent": ["in", rule_names]},
+			fields=["parent", "item_group", "discount_percentage"]
+		)
+		for row in child_rows:
+			if row.parent not in item_groups_map:
+				item_groups_map[row.parent] = {}
+			item_groups_map[row.parent][row.item_group] = flt(row.discount_percentage)
+			
 	active_rules = []
 	for rule in rules:
 		rule_end = getdate(rule.end_date) if rule.end_date else None
@@ -254,7 +274,9 @@ def _get_active_customer_rules():
 		
 		active_rules.append(frappe._dict({
 			"customer_group": rule.customer_group,
-			"max_discount": flt(rule.max_discount_percentage)
+			"discount_type": rule.discount_type,
+			"max_discount": flt(rule.max_discount_percentage) if rule.discount_type == "All Items" else None,
+			"item_groups": item_groups_map.get(rule.name, {}) if rule.discount_type == "Item Group" else {}
 		}))
 	
 	return active_rules

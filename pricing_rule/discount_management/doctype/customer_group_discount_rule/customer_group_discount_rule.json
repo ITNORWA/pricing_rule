@@ -11,7 +11,9 @@
   "start_date",
   "end_date",
   "section_break_1",
+  "discount_type",
   "max_discount_percentage",
+  "item_groups",
   "column_break_2",
   "is_enabled"
  ],
@@ -46,11 +48,28 @@
    "label": "Rules"
   },
   {
+   "default": "All Items",
+   "fieldname": "discount_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Discount Type",
+   "options": "All Items\nItem Group",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.discount_type=='All Items'",
    "fieldname": "max_discount_percentage",
    "fieldtype": "Percent",
    "in_list_view": 1,
    "label": "Max Discount Percentage",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.discount_type=='All Items'"
+  },
+  {
+   "depends_on": "eval:doc.discount_type=='Item Group'",
+   "fieldname": "item_groups",
+   "fieldtype": "Table",
+   "label": "Item Groups",
+   "options": "Customer Discount Rule Item Group"
   },
   {
    "fieldname": "column_break_2",
